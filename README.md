@@ -15,7 +15,7 @@ This repo is a collection of Jupyter Notebooks in which I try to collect data us
 
 This scraper goes through the housing page of Seattle's Craigslist and collects the titles of all of the listings on the first page of listings.
 
-### To Do
+### To Try
 
 - [ ] Grab links for posts as well. Possibly hot-link the extracted title.
 
@@ -23,7 +23,7 @@ This scraper goes through the housing page of Seattle's Craigslist and collects 
 
 This scraper takes in an Instagram profile name. If the user's profile is public, the scraper will download every photo available on their profile.
 
-### To Do
+### To Try
 
 - [ ] Add a way to check if a post is a multi-image post. If so, find out how to collect the URLs for all of the images in the post.
 - [ ] Find out whether or not a post is a video and see if there is a way to extract it.
@@ -32,7 +32,7 @@ This scraper takes in an Instagram profile name. If the user's profile is public
 
 This scraper takes in the URL to a Medium article and scrapes the text content of the article. The text content is then written to a Markdown file.
 
-### To Do
+### To Try
 
 - [ ] Find a way to identify section headings, code blocks, and images to add them to the final Markdown output file.
 
@@ -40,6 +40,6 @@ This scraper takes in the URL to a Medium article and scrapes the text content o
 
 This is an example of using a library to access API data from YouTube without having to make the API calls directly with a tool like `requests`.
 
-### To Do
+### To Try
 
-Develop further examples/use-cases.
+- [ ] Develop further examples/use-cases.
