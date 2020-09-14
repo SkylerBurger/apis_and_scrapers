@@ -5,38 +5,83 @@ from selenium import webdriver
 
 
 class AdultSwimShow:
+    """Models an AdultSwim show."""
     def __init__(self, show_link):
+        """Instantiates an AdultSwimShow object.
+        
+        Arguments:
+            show_link (str): A link to a show's page on AdultSwim.com.
+        """
         self.show_link = show_link
         self.episode_count = 0
 
     def get_season(self, number):
+        """Returns a specific season of the show, if available.
+
+        Args:
+            number (int): Represents the number of the requested season.
+
+        Returns:
+            (dict) or (None): A dict of episode details if the season is 
+                available, otherwise None.
+        """
         return self.show_guide.get(f'season_{number}')
 
     def get_episode(self, season, episode):
+        """Returns the details of a specific episode, if available.
+
+        Args:
+            season (int): Represents the number of the requested season.
+            episode (int): Represents the number of the requested episode.
+
+        Returns:
+            (dict) or (None): A dict of details for the requested episode if
+                the epsiode if available, otherwise None.
+        """
         season = self.show_guide.get(f'season_{season}')
         return season.get(f'episode_{episode}') if season else None
 
     @property
     def season_list(self):
+        """Returns a list of available seasons.
+
+        Returns:
+            (list): Contains the names of available seasons.
+        """
         return list(self.show_guide)
 
 
 class AdultSwimShowBuilder:
-    def __init__(self, show_link):
+    """A Builder class for creating instances of AdultSwimShow."""
+    def __init__(self, chromedriver_location, show_link):
+        """Instantiates an AdultSwimShowBuilder object.
+
+        Args:
+            show_link (str): A link to a show's page on AdultSwim.
+        """
+        self.chromedriver_location = chromedriver_location
         self.show = AdultSwimShow(show_link)
         self._create_show_guide()
 
     def _create_browser(self):
-        """Returns a Selenium Chrome webdriver."""
+        """Returns a Selenium Chrome WebDriver.
+
+        Returns:
+            (WebDriver): A Selenium Chrome WebDriver that runs headless.
+        """
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         browser = webdriver.Chrome(
-            executable_path='../../utilities/chromedriver', 
+            executable_path=self.chromedriver_location, 
             options=options)
         return browser
 
     def _get_html(self):
-        """Returns the HTML content for a given URL."""
+        """Retrieves the HTML content of the modelled AdultSwim show.
+        
+        Returns:
+            html (str): The HTML content of the modelled AdultSwim show's page.
+        """ 
         browser = self._create_browser()
         browser.get(self.show.show_link)
         html = browser.page_source
@@ -44,7 +89,17 @@ class AdultSwimShowBuilder:
         return html
 
     def _normalize_episodes(self, season):
-        """Returns a dict of details for each episode in a given season."""
+        """Returns a dict of details for each episode in a given season.
+        
+        Args:
+            season (Tag): A BeautifulSoup Tag element containing the HTML
+                contents for a single season from the modelled AdultSwim show 
+                page.
+
+        Returns:
+            episode_guide (dict): Contains details for each available episode 
+                in this season.
+        """
         episodes = season.find_all('div', class_='_29ThWwPi')
         episode_guide = {}
 
@@ -66,7 +121,20 @@ class AdultSwimShowBuilder:
         return episode_guide
 
     def _normalize_season(self, season):
-        """Returns the season number and a dict of episode details for a given season."""
+        """Returns the season number and a dict of episode details for a given season.
+        
+        Args:
+            season (Tag): A BeautifulSoup Tag element containing the HTML
+                contents for a single season from the modelled AdultSwim show 
+                page.
+
+        Returns:
+            season_number (str): Represents the chronological number for this 
+                season
+            episode_guide (dict): Contains details for each available episode
+                in this season.
+        """
+        print(type(season))
         season_number_tag = season.find(name='meta', attrs={'itemprop':'seasonNumber'})
         season_number = season_number_tag['content']
         episode_guide = self._normalize_episodes(season)
@@ -74,7 +142,9 @@ class AdultSwimShowBuilder:
         return season_number, episode_guide
 
     def _create_show_guide(self):
-        """Returns a dict of episode details separated by seasons for a given AdultSwim show link."""
+        """Generates a dict of details for all available episodes and assigns 
+        it to the AdultSwimShow instance.
+        """
         html = self._get_html()
         soup = BeautifulSoup(html, 'html.parser')
         seasons = soup.find_all(name='div', attrs={'itemprop':'containsSeason'})
@@ -87,22 +157,34 @@ class AdultSwimShowBuilder:
 
         self.show.show_guide = show_guide
 
-
+# Question: Is this Director more of an Abstract Factory?
+# Doesn't seem to interact much with the Builder class.
 class ShowDirector:
-    def __init__(self):
+    """A Director class for generating representations of shows."""
+    def __init__(self, chromedriver_location):
+        """Instantiates a ShowDirector object."""
         self.builder = None
+        self.chromedriver_location = chromedriver_location
 
     def build_adultswim_show(self, show_link):
-        # If the Director doesn't give the builder commands,
-        # does this mean this is more of an abstract factory?
-        self.builder = AdultSwimShowBuilder(show_link)
+        """Utilizes an AdultSwimShowBuilder instance to build up an 
+            AdultSwimShow instance modelled after the requested show.
+
+        Args:
+            show_link (str): A link to an AdultSwim show page.
+
+        Returns:
+            (AdultSwimShow): An AdultSwimShow instance modelled after the 
+                requested show.
+        """
+        self.builder = AdultSwimShowBuilder(self.chromedriver_location, show_link)
         return self.builder.show
 
 
 if __name__ == '__main__':
-    adultswim_show_link = adultswim_show_link = 'https://www.adultswim.com/videos/ghost-in-the-shell'
+    adultswim_show_link = 'https://www.adultswim.com/videos/ghost-in-the-shell'
     
-    show_director = ShowDirector()
+    show_director = ShowDirector('../../utilities/chromedriver')
 
     ghost_in_the_shell = show_director.build_adultswim_show(adultswim_show_link)
 
@@ -114,4 +196,4 @@ if __name__ == '__main__':
     # pprint(ghost_in_the_shell.season_list)
     # pprint(ghost_in_the_shell.show_guide)
     # pprint(ghost_in_the_shell.get_season(1))
-    # pprint(ghost_in_the_shell.get_episode(2, 2))
+    pprint(ghost_in_the_shell.get_episode(2, 2))
