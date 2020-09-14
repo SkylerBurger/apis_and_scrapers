@@ -3,7 +3,6 @@ import time
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 
 
 class InstaProfile:
@@ -56,12 +55,12 @@ class InstaBuilder:
 
     def _get_chrome_webdriver(self):
         """Creates and returns a Selenium Chrome WebDriver instance."""
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        options = webdriver.ChromeOptions()
+        options.add_argument("headless")
 
         return webdriver.Chrome(
             '../utilities/chromedriver', 
-            options=chrome_options,
+            options=options,
         )
 
     def gather_html(self):
