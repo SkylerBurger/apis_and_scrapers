@@ -14,7 +14,7 @@ class ChromedriverMixin:
         options = webdriver.ChromeOptions()
         options.add_argument("headless")
         browser = webdriver.Chrome(
-            '../../utilities/chromedriver', 
+            '../utilities/chromedriver', 
             options=options,
         )
 

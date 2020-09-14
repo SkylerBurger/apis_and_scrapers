@@ -184,7 +184,7 @@ class ShowDirector:
 if __name__ == '__main__':
     adultswim_show_link = 'https://www.adultswim.com/videos/ghost-in-the-shell'
     
-    show_director = ShowDirector('../../utilities/chromedriver')
+    show_director = ShowDirector('../utilities/chromedriver')
 
     ghost_in_the_shell = show_director.build_adultswim_show(adultswim_show_link)
 
