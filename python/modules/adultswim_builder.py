@@ -7,6 +7,7 @@ from selenium import webdriver
 class AdultSwimShow:
     def __init__(self, show_link):
         self.show_link = show_link
+        self.episode_count = 0
 
     def get_season(self, number):
         return self.show_guide.get(f'season_{number}')
@@ -34,7 +35,6 @@ class AdultSwimShowBuilder:
             options=options)
         return browser
 
-
     def _get_html(self):
         """Returns the HTML content for a given URL."""
         browser = self._create_browser()
@@ -42,7 +42,6 @@ class AdultSwimShowBuilder:
         html = browser.page_source
         browser.quit()
         return html
-
 
     def _normalize_episodes(self, season):
         """Returns a dict of details for each episode in a given season."""
@@ -62,9 +61,9 @@ class AdultSwimShowBuilder:
                     episode_data[prop] = content
 
             episode_guide[f'episode_{episode_number}'] = episode_data
+            self.show.episode_count += 1
 
         return episode_guide
-
 
     def _normalize_season(self, season):
         """Returns the season number and a dict of episode details for a given season."""
@@ -73,7 +72,6 @@ class AdultSwimShowBuilder:
         episode_guide = self._normalize_episodes(season)
 
         return season_number, episode_guide
-
 
     def _create_show_guide(self):
         """Returns a dict of episode details separated by seasons for a given AdultSwim show link."""
@@ -108,13 +106,12 @@ if __name__ == '__main__':
 
     ghost_in_the_shell = show_director.build_adultswim_show(adultswim_show_link)
 
-    pprint(ghost_in_the_shell.season_count)
-    pprint(ghost_in_the_shell.show_link)
-    pprint(ghost_in_the_shell.get_season(1))
-    pprint(ghost_in_the_shell.season_list)
-    pprint(ghost_in_the_shell.get_episode(2, 2))
+    # Uncomment the following lines to inspect the AdultSwimShow object
 
-
-
-
-
+    # pprint(ghost_in_the_shell.season_count)
+    # pprint(ghost_in_the_shell.episode_count)
+    # pprint(ghost_in_the_shell.show_link)
+    # pprint(ghost_in_the_shell.season_list)
+    # pprint(ghost_in_the_shell.show_guide)
+    # pprint(ghost_in_the_shell.get_season(1))
+    # pprint(ghost_in_the_shell.get_episode(2, 2))
