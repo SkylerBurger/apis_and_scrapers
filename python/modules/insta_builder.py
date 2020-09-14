@@ -14,7 +14,7 @@ class ChromedriverMixin:
         options = webdriver.ChromeOptions()
         options.add_argument("headless")
         browser = webdriver.Chrome(
-            '../utilities/chromedriver', 
+            '../../utilities/chromedriver', 
             options=options,
         )
 
@@ -36,7 +36,6 @@ class InstaProfile(ChromedriverMixin):
             max (int): The maximum number of images to download. If no number 
                 is specified all images will be downloaded.
         """
-        # Create Selenium WebDriver instance
         browser = self._get_browser()
 
         image_subset = self.image_urls[:max] if max else self.image_urls
@@ -44,16 +43,21 @@ class InstaProfile(ChromedriverMixin):
         for index, image in enumerate(image_subset):
             browser.get(image['src'])
             images = browser.find_elements_by_tag_name('img')
-            # Edit file name f-string below  as needed
             images[0].screenshot(f'./screenshot_{index}.png')
             wait_time = randint(1, 2)
             time.sleep(wait_time)
 
         browser.quit()
 
-    def report_images(self):
-        """Prints the number of image URLs collected."""
-        print(f'Image URLs Captured: {len(self.image_urls)}')
+    @property
+    def image_count(self):
+        """Returns the count of image links captured in the InstaProfile 
+        instance.
+
+        Returns:
+            (int): The quantity of image links in the InstaProfile instance.
+        """
+        return len(self.image_urls)
 
 
 class InstaBuilder(ChromedriverMixin):
@@ -65,45 +69,36 @@ class InstaBuilder(ChromedriverMixin):
         self.max_scroll_secs = max_scroll_secs
 
     def gather_html(self):
-        """Scrolls and records the HTML content of a profile page."""
-        SCROLL_PAUSE_TIME = 1
-
+        """Captures snapshots of the entire HTML content of the profile page 
+        being modelled and sets it to the InstaBuilder instance.
+        """
         browser = self._get_browser()
-
         browser.get(self.insta_profile.profile_url)
 
-        # Get scroll height
+        SCROLL_PAUSE_TIME = 2
         last_height = browser.execute_script("return document.body.scrollHeight")
-        
         end_time = time.time() + self.max_scroll_secs
         
         while time.time() < end_time:
-            # Scroll down to bottom
             browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-            # Wait to load page
             time.sleep(SCROLL_PAUSE_TIME)
-
-            # Calculate new scroll height and compare with last scroll height
             new_height = browser.execute_script("return document.body.scrollHeight")
             if new_height <= last_height:
                 self.snapshots.append(browser.page_source)
                 break
-            # Create HTML snapshot
             self.snapshots.append(browser.page_source)
             last_height = new_height
 
         browser.quit()
 
     def gather_image_tags(self):
-        """Reduces a collection HTML content into unique image URLs."""
-        
+        """Reduces a collection HTML content snapshots into a list of unique 
+        image URLs.
+        """
         image_tags = []
         
         for html in self.snapshots:
-
             soup = BeautifulSoup(html, 'html.parser')
-            # 'FFVAD' is currently the common class for all profile images
             image_tags += soup.find_all('img', class_='FFVAD')
             
         self.insta_profile.image_urls = list(set(image_tags))
@@ -126,7 +121,7 @@ class ProfileDirector:
                 the page.
 
         Returns:
-            (InstaProfile) - An InstaProfile instance.
+            (InstaProfile): An InstaProfile instance.
         """
         self.builder = InstaBuilder(profile_name, max_scroll_secs)
         self.builder.gather_html()
@@ -142,10 +137,8 @@ if __name__ == "__main__":
     # Change value below to int, or leave as None to download all
     # max_images_to_download = None
 
-    director = ProfileDirector()
+    # director = ProfileDirector()
+    # instagram_profile = director.build_insta_profile(profile_name)
 
-    instagram_profile = director.build_insta_profile(profile_name)
-
-    instagram_profile.report_images()
-
-    instagram_profile.download_images(max_images_to_download)
+    # print(instagram_profile.image_count)
+    # instagram_profile.download_images(max_images_to_download)
