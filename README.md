@@ -18,43 +18,30 @@ This repo is a collection of Jupyter Notebooks in which I try to collect data us
 - [`requests`](https://pypi.org/project/requests/) - Library for making HTTP requests.
 - [`selenium`](https://pypi.org/project/selenium/) - Library for controlling web browsers.
 
+## AdultSwim
+
+This scraper gathers details for available seasons and episodes featured on a specific show's page on [AdultSwim.com](https://www.adultswim.com/videos/).
+
 ## Craigslist
 
 This scraper goes through the housing page of Seattle's Craigslist and collects the titles of all of the listings on the first page of listings.
-
-### Potential Next Steps
-
-- Grab links for posts as well. Possibly hot-link the extracted title.
 
 ## Instagram
 
 This scraper takes in an Instagram profile name. If the user's profile is public, the scraper will download every photo available on their profile.
 
-### Potential Next Steps
-
-- Add a way to check if a post is a multi-image post. If so, find out how to collect the URLs for all of the images in the post.
-- Find out whether or not a post is a video and see if there is a way to extract it.
-
 ## Medium
 
 This scraper takes in the URL to a Medium article and scrapes the text content of the article. The text content is then written to a Markdown file.
-
-### Potential Next Steps
-
-- Find a way to identify section headings, code blocks, and images to add them to the final Markdown output file.
 
 ## The Movie Database (TMDB)
 
 This lightweight server goes through the auth process for generating account-approved access tokens as described in TMDB API version 4's documentation. Once the access token has been generated it makes a quick request to retrieve info about every list the user has created (even private lists).
 
-### Potential Next Steps
+## Wikipedia
 
-- Create a Chrome Extension that recognizes when a user is looking at a movie's detail page, and appends the names of lists that movie is a member of on the page in the 'facts' box.
+This scraper attempts to locate areas where citations are needed within a specific article on Wikipedia.
 
 ## YouTube
 
 This is an example of using a library to access API data from YouTube without having to make the API calls directly with a tool like `requests`.
-
-### Potential Next Steps
-
-- Develop further examples/use-cases.
