@@ -5,7 +5,23 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 
-class InstaProfile:
+class ChromedriverMixin:
+    """A Mixin Class for adding the ability to generate a Selenium Chrome 
+    Webdriver instance.
+    """
+    def _get_browser(self):
+        """Creates and returns a Selenium Chrome WebDriver instance."""
+        options = webdriver.ChromeOptions()
+        options.add_argument("headless")
+        browser = webdriver.Chrome(
+            '../utilities/chromedriver', 
+            options=options,
+        )
+
+        return browser
+
+
+class InstaProfile(ChromedriverMixin):
     """Models an Instagram profile."""
     def __init__(self, profile_name):
         """Instantiates an InstaProfile object."""
@@ -17,16 +33,11 @@ class InstaProfile:
         """Downloads images to the current working directory.
 
         Arguments:
-            max (int) - The maximum number of images to download. If no number 
+            max (int): The maximum number of images to download. If no number 
                 is specified all images will be downloaded.
         """
         # Create Selenium WebDriver instance
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        browser = webdriver.Chrome(
-            '../utilities/chromedriver', 
-            options=chrome_options,
-        )
+        browser = self._get_browser()
 
         image_subset = self.image_urls[:max] if max else self.image_urls
 
@@ -45,7 +56,7 @@ class InstaProfile:
         print(f'Image URLs Captured: {len(self.image_urls)}')
 
 
-class InstaBuilder:
+class InstaBuilder(ChromedriverMixin):
     """A Builder class for creating instances of InstaProfile."""
     def __init__(self, profile_name, max_scroll_secs):
         """Instantiates an InstaBuilder object."""
@@ -53,21 +64,11 @@ class InstaBuilder:
         self.snapshots = []
         self.max_scroll_secs = max_scroll_secs
 
-    def _get_chrome_webdriver(self):
-        """Creates and returns a Selenium Chrome WebDriver instance."""
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-
-        return webdriver.Chrome(
-            '../utilities/chromedriver', 
-            options=options,
-        )
-
     def gather_html(self):
         """Scrolls and records the HTML content of a profile page."""
         SCROLL_PAUSE_TIME = 1
 
-        browser = self._get_chrome_webdriver()
+        browser = self._get_browser()
 
         browser.get(self.insta_profile.profile_url)
 
@@ -118,8 +119,8 @@ class ProfileDirector:
         """Utilizes a Builder class to build and return an InstaProfile object.
 
         Arguments:
-            profile_name (str) - Represents the name of an Instagram profile.
-            max_scroll_seconds (int) - Limits the number of seconds Selenium is 
+            profile_name (str): Represents the name of an Instagram profile.
+            max_scroll_seconds (int): Limits the number of seconds Selenium is 
                 allowed to scroll through a profile page before stopping. If no 
                 number is provided it will scroll until it reaches the end of 
                 the page.
