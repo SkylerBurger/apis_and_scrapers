@@ -68,12 +68,23 @@ class InstaBuilder(ChromedriverMixin):
         self.snapshots = []
         self.max_scroll_secs = max_scroll_secs
 
+    def _click_show_more_button(self, browser):
+        """Simulates a click on the 'show more' button.
+
+        Args:
+            browser (WebDriver): The current WebDriver being utilized.
+        """
+        browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        button = browser.find_element_by_class_name('z4xUb')
+        button.click()
+
     def gather_html(self):
         """Captures snapshots of the entire HTML content of the profile page 
         being modelled and sets it to the InstaBuilder instance.
         """
         browser = self._get_browser()
         browser.get(self.insta_profile.profile_url)
+        self._click_show_more_button(browser)
 
         SCROLL_PAUSE_TIME = 2
         last_height = browser.execute_script("return document.body.scrollHeight")
