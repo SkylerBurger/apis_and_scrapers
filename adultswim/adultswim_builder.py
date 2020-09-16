@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
@@ -53,14 +51,15 @@ class AdultSwimShow:
 
 class AdultSwimShowBuilder:
     """A Builder class for creating instances of AdultSwimShow."""
-    def __init__(self, chromedriver_location, show_link):
+    def __init__(self, chromedriver_location, args):
         """Instantiates an AdultSwimShowBuilder object.
 
         Args:
             show_link (str): A link to a show's page on AdultSwim.
         """
+        show_link = args[0]
         self.chromedriver_location = chromedriver_location
-        self.show = AdultSwimShow(show_link)
+        self.product = AdultSwimShow(show_link)
         self._create_show_guide()
 
     def _create_browser(self):
@@ -83,7 +82,7 @@ class AdultSwimShowBuilder:
             html (str): The HTML content of the modelled AdultSwim show's page.
         """ 
         browser = self._create_browser()
-        browser.get(self.show.show_link)
+        browser.get(self.product.show_link)
         html = browser.page_source
         browser.quit()
         return html
@@ -116,7 +115,7 @@ class AdultSwimShowBuilder:
                     episode_data[prop] = content
 
             episode_guide[f'episode_{episode_number}'] = episode_data
-            self.show.episode_count += 1
+            self.product.episode_count += 1
 
         return episode_guide
 
@@ -134,7 +133,6 @@ class AdultSwimShowBuilder:
             episode_guide (dict): Contains details for each available episode
                 in this season.
         """
-        print(type(season))
         season_number_tag = season.find(name='meta', attrs={'itemprop':'seasonNumber'})
         season_number = season_number_tag['content']
         episode_guide = self._normalize_episodes(season)
@@ -148,19 +146,29 @@ class AdultSwimShowBuilder:
         html = self._get_html()
         soup = BeautifulSoup(html, 'html.parser')
         seasons = soup.find_all(name='div', attrs={'itemprop':'containsSeason'})
-        self.show.season_count = len(seasons)
+        self.product.season_count = len(seasons)
         show_guide = {}
 
         for index, season in enumerate(seasons):
             season_number, episode_guide = self._normalize_season(season)
             show_guide[f'season_{season_number}'] = episode_guide
 
-        self.show.show_guide = show_guide
+        self.product.show_guide = show_guide
+
+
+class AdultSwimCollectionBuilder:
+    pass
+
 
 # Question: Is this Director more of an Abstract Factory?
 # Doesn't seem to interact much with the Builder class.
-class ShowDirector:
+class AdultSwimDirector:
     """A Director class for generating representations of shows."""
+    builders = {
+        'show': AdultSwimShowBuilder,
+        'collection': AdultSwimCollectionBuilder,
+    }
+
     def __init__(self, chromedriver_location):
         """Instantiates a ShowDirector object."""
         self.builder = None
@@ -180,20 +188,12 @@ class ShowDirector:
         self.builder = AdultSwimShowBuilder(self.chromedriver_location, show_link)
         return self.builder.show
 
+    def build(self, build_type, *args):
+        self.builder = AdultSwimDirector.builders.get(build_type)
+        
+        if self.builder == None:
+            raise TypeError(f'The AdultSwimDirector does not support build type \'{build_type}\'.')
 
-if __name__ == '__main__':
-    adultswim_show_link = 'https://www.adultswim.com/videos/ghost-in-the-shell'
-    
-    show_director = ShowDirector('../utilities/chromedriver')
+        self.builder = self.builder(self.chromedriver_location, args)
 
-    ghost_in_the_shell = show_director.build_adultswim_show(adultswim_show_link)
-
-    # Uncomment the following lines to inspect the AdultSwimShow object
-
-    # pprint(ghost_in_the_shell.season_count)
-    # pprint(ghost_in_the_shell.episode_count)
-    # pprint(ghost_in_the_shell.show_link)
-    # pprint(ghost_in_the_shell.season_list)
-    # pprint(ghost_in_the_shell.show_guide)
-    # pprint(ghost_in_the_shell.get_season(1))
-    pprint(ghost_in_the_shell.get_episode(2, 2))
+        return self.builder.product
