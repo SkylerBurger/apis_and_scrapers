@@ -69,14 +69,17 @@ class InstaBuilder(ChromedriverMixin):
         self.max_scroll_secs = max_scroll_secs
 
     def _click_show_more_button(self, browser):
-        """Simulates a click on the 'show more' button.
+        """Simulates a click on the 'show more' button, if present.
 
         Args:
             browser (WebDriver): The current WebDriver being utilized.
         """
         browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        button = browser.find_element_by_class_name('z4xUb')
-        button.click()
+        try:
+            button = browser.find_element_by_class_name('z4xUb')
+            button.click()
+        except:
+            return
 
     def gather_html(self):
         """Captures snapshots of the entire HTML content of the profile page 
@@ -139,17 +142,3 @@ class ProfileDirector:
         self.builder.gather_image_tags()
 
         return self.builder.insta_profile
-
-
-if __name__ == "__main__":
-    # Add an Instagram profile name below
-    # profile_name = ''
-
-    # Change value below to int, or leave as None to download all
-    # max_images_to_download = None
-
-    # director = ProfileDirector()
-    # instagram_profile = director.build_insta_profile(profile_name)
-
-    # print(instagram_profile.image_count)
-    # instagram_profile.download_images(max_images_to_download)
