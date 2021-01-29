@@ -7,7 +7,7 @@ class Browser:
     def __init__(self):
         """Instantiates a Browser object.
         """
-        self.driver = webdriver.Chrome('./chromedriver')
+        self.driver = webdriver.Chrome('../utilities/chromedriver')
 
     def get(self, url):
         """Navigates the browser to the given URL.
@@ -26,7 +26,7 @@ class Scroller(Browser):
             base_url (str): The URL for the site to be crawled.
             next_class (str, optional): The class given to the next page button. Defaults to None.
         """
-        super().__init__(self)
+        super().__init__()
         self.base_url = base_url
         self.next_class = next_class
         self.snapshots = []
@@ -54,8 +54,10 @@ class Scroller(Browser):
             num (int): The number of pages to advance through.
         """
         self.get(f'{self.base_url}1')
-        for _ in range(num):
-            time.sleep(1)
-            self.take_snapshot()
+        self.take_snapshot()
+        for _ in range(num - 1):
             time.sleep(0.5)
             self.click_next()
+            time.sleep(1)
+            self.take_snapshot()
+        self.driver.close()
