@@ -52,13 +52,13 @@ def collect_links(snapshots):
     img elements.
     """
     links = []
+    image_pattern = re.compile(r'background-image: url\("(.+)"\)')
+    video_pattern = re.compile('src="(.+)"')
 
     for html in snapshots:
         soup = BeautifulSoup(html, 'html.parser')
         cards = soup.find_all('div', class_='image-card')
         # videos = soup.find_all('video')
-        image_pattern = re.compile(r'background-image: url\("(.+)"\)')
-        video_pattern = re.compile('src="(.+)"')
 
         for card in cards:
             # Get image link
