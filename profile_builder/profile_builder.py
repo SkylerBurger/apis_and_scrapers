@@ -6,10 +6,12 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 
-class ChromedriverMixin:
-    """A Mixin Class for adding the ability to generate a Selenium Chrome 
-    Webdriver instance.
-    """
+class BaseProfile:
+    def __init__(self, base_profile_url, profile_name):
+        self.profile_name = profile_name
+        self.profile_url = base_profile_url + profile_name
+        self.image_urls = []
+
     def _get_browser(self):
         """Creates and returns a Selenium Chrome WebDriver instance."""
         options = webdriver.ChromeOptions()
@@ -20,26 +22,10 @@ class ChromedriverMixin:
         )
 
         return browser
-
-
-class TikTokProfile:
-    def __init__(self, profile_name):
-        self.profile_name = profile_name
-        self.profile_url = f'https://www.tiktok.com/{profile_name}'
-        self.image_urls = []
-
+    
     @property
     def image_count(self):
         return len(self.image_urls)
-
-
-class InstaProfile:
-    """Models an Instagram profile."""
-    def __init__(self, profile_name):
-        """Instantiates an InstaProfile object."""
-        self.profile_name = profile_name
-        self.profile_url = f'https://www.instagram.com/{profile_name}'
-        self.image_urls = []
 
     def download_images(self, max=None):
         """Downloads images to the current working directory.
@@ -53,7 +39,7 @@ class InstaProfile:
         image_subset = self.image_urls[:max] if max else self.image_urls
 
         for index, image in enumerate(image_subset):
-            browser.get(image['src'])
+            browser.get(image)
             images = browser.find_elements_by_tag_name('img')
             images[0].screenshot(f'./screenshot_{index}.png')
             wait_time = randint(1, 2)
@@ -61,18 +47,19 @@ class InstaProfile:
 
         browser.quit()
 
-    @property
-    def image_count(self):
-        """Returns the count of image links captured in the InstaProfile 
-        instance.
-
-        Returns:
-            (int): The quantity of image links in the InstaProfile instance.
-        """
-        return len(self.image_urls)
+class TikTokProfile(BaseProfile):
+    def __init__(self, profile_name):
+        super().__init__('https://www.tiktok.com/', profile_name)
 
 
-class TikTokBuilder(ChromedriverMixin):
+class InstaProfile(BaseProfile):
+    """Models an Instagram profile."""
+    def __init__(self, profile_name):
+        """Instantiates an InstaProfile object."""
+        super().__init__('https://www.instagram.com/', profile_name)
+
+
+class TikTokBuilder:
     def __init__(self, profile_name, max_scroll_secs):
         self.tiktok_profile = TikTokProfile(profile_name)
         self.snapshots = []
@@ -82,7 +69,7 @@ class TikTokBuilder(ChromedriverMixin):
         """Captures snapshots of the entire HTML content of the profile page 
         being modelled and sets it to the InstaBuilder instance.
         """
-        browser = self._get_browser()
+        browser = self.tiktok_profile._get_browser()
         browser.get(self.tiktok_profile.profile_url)
 
         SCROLL_PAUSE_TIME = 2
@@ -120,7 +107,7 @@ class TikTokBuilder(ChromedriverMixin):
         self.tiktok_profile.image_urls = list(set(image_tags))
 
 
-class InstaBuilder(ChromedriverMixin):
+class InstaBuilder:
     """A Builder class for creating instances of InstaProfile."""
     def __init__(self, profile_name, max_scroll_secs):
         """Instantiates an InstaBuilder object."""
@@ -145,7 +132,7 @@ class InstaBuilder(ChromedriverMixin):
         """Captures snapshots of the entire HTML content of the profile page 
         being modelled and sets it to the InstaBuilder instance.
         """
-        browser = self._get_browser()
+        browser = self.insta_profile._get_browser()
         browser.get(self.insta_profile.profile_url)
         self._click_show_more_button(browser)
 
@@ -214,4 +201,5 @@ class ProfileDirector:
 if __name__ == "__main__":
     director = ProfileDirector()
     tiktok_profile = director.build_tiktok_profile('@mikeservinofficial')
-    print(tiktok_profile.image_urls)
+    print(tiktok_profile.image_count)
+    tiktok_profile.download_images()
