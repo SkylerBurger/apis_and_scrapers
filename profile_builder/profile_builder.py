@@ -15,7 +15,7 @@ class BaseProfile:
     def _get_browser(self):
         """Creates and returns a Selenium Chrome WebDriver instance."""
         options = webdriver.ChromeOptions()
-        options.add_argument("headless")
+        # options.add_argument("headless")
         browser = webdriver.Chrome(
             '../utilities/chromedriver', 
             options=options,
@@ -72,7 +72,7 @@ class TikTokBuilder:
         browser = self.tiktok_profile._get_browser()
         browser.get(self.tiktok_profile.profile_url)
 
-        SCROLL_PAUSE_TIME = 2
+        SCROLL_PAUSE_TIME = 3
         last_height = browser.execute_script("return document.body.scrollHeight")
         end_time = time.time() + self.max_scroll_secs
         
@@ -88,11 +88,11 @@ class TikTokBuilder:
 
         browser.quit()
 
-    def gather_image_tags(self):
+    def gather_image_links(self):
         """Reduces a collection HTML content snapshots into a list of unique 
         image URLs.
         """
-        image_tags = []
+        image_links = []
         image_pattern = re.compile(r'background-image: url\("(.+)"\)')
 
         
@@ -102,9 +102,9 @@ class TikTokBuilder:
 
             for card in cards:
                 match_obj = image_pattern.search(str(card))
-                image_tags.append(match_obj[1])
+                image_links.append(match_obj[1])
             
-        self.tiktok_profile.image_urls = list(set(image_tags))
+        self.tiktok_profile.image_urls = list(set(image_links))
 
 
 class InstaBuilder:
@@ -152,17 +152,18 @@ class InstaBuilder:
 
         browser.quit()
 
-    def gather_image_tags(self):
+    def gather_image_links(self):
         """Reduces a collection HTML content snapshots into a list of unique 
         image URLs.
         """
-        image_tags = []
+        image_links = []
         
         for html in self.snapshots:
             soup = BeautifulSoup(html, 'html.parser')
-            image_tags += soup.find_all('img', class_='FFVAD')
+            image_tags = soup.find_all('img', class_='FFVAD')
+            image_links += [tag['src'] for tag in image_tags]
             
-        self.insta_profile.image_urls = list(set(image_tags))
+        self.insta_profile.image_urls = list(set(image_links))
 
 
 class ProfileDirector:
@@ -186,20 +187,13 @@ class ProfileDirector:
         """
         self.builder = InstaBuilder(profile_name, max_scroll_secs)
         self.builder.gather_html()
-        self.builder.gather_image_tags()
+        self.builder.gather_image_links()
 
         return self.builder.insta_profile
 
     def build_tiktok_profile(self, profile_name, max_scroll_secs=300):
         self.builder = TikTokBuilder(profile_name, max_scroll_secs)
         self.builder.gather_html()
-        self.builder.gather_image_tags()
+        self.builder.gather_image_links()
 
         return self.builder.tiktok_profile
-
-
-if __name__ == "__main__":
-    director = ProfileDirector()
-    tiktok_profile = director.build_tiktok_profile('@mikeservinofficial')
-    print(tiktok_profile.image_count)
-    tiktok_profile.download_images()
