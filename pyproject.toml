@@ -9,7 +9,7 @@ python = "^3.8"
 requests = "^2.23.0"
 selenium = "^3.141.0"
 beautifulsoup4 = "^4.9.1"
-jupyterlab = "^2.1.4"
+jupyterlab = "^2.2.10"
 google-api-python-client = "^1.9.3"
 environs = "^8.0.0"
 
